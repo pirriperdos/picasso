@@ -202,8 +202,10 @@ public class RequestCreator {
   }
 
   /** Synchronously fulfill this request. Must not be called from the main thread. */
-  public Bitmap get() throws IOException {
-    checkNotMain();
+  public Bitmap get(boolean checkMain) throws IOException {
+    if (checkMain) {
+        checkNotMain();
+    }
     if (deferred) {
       throw new IllegalStateException("Fit cannot be used with get.");
     }

@@ -65,7 +65,7 @@ public class RequestCreatorTest {
   @Test
   public void getOnMainCrashes() throws Exception {
     try {
-      new RequestCreator(picasso, URI_1, 0).get();
+      new RequestCreator(picasso, URI_1, 0).get(true);
       fail("Calling get() on main thread should throw exception");
     } catch (IllegalStateException expected) {
     }
@@ -87,7 +87,7 @@ public class RequestCreatorTest {
     new Thread(new Runnable() {
       @Override public void run() {
         try {
-          result[0] = new RequestCreator(picasso, null, 0).get();
+          result[0] = new RequestCreator(picasso, null, 0).get(true);
         } catch (IOException e) {
           fail(e.getMessage());
         } finally {
