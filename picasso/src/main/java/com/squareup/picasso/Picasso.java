@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
@@ -114,12 +115,13 @@ public class Picasso {
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   final ReferenceQueue<Object> referenceQueue;
+  final BitmapFactory.Options options;
 
   boolean debugging;
   boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
-      RequestTransformer requestTransformer, Stats stats, boolean debugging) {
+          RequestTransformer requestTransformer, Stats stats, boolean debugging, BitmapFactory.Options options) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.cache = cache;
@@ -131,6 +133,7 @@ public class Picasso {
     this.debugging = debugging;
     this.referenceQueue = new ReferenceQueue<Object>();
     this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
+    this.options = options;
     this.cleanupThread.start();
   }
 
@@ -402,8 +405,9 @@ public class Picasso {
     private Listener listener;
     private RequestTransformer transformer;
     private boolean debugging;
+    private BitmapFactory.Options options;
 
-    /** Start building a new {@link Picasso} instance. */
+      /** Start building a new {@link Picasso} instance. */
     public Builder(Context context) {
       if (context == null) {
         throw new IllegalArgumentException("Context must not be null.");
@@ -482,6 +486,11 @@ public class Picasso {
       return this;
     }
 
+    public Builder decodeOptions(BitmapFactory.Options options) {
+        this.options = options;
+        return this;
+    }
+
     /** Create the {@link Picasso} instance. */
     public Picasso build() {
       Context context = this.context;
@@ -499,11 +508,16 @@ public class Picasso {
         transformer = RequestTransformer.IDENTITY;
       }
 
+      if (options == null) {
+          options = new BitmapFactory.Options();
+          options.inPreferredConfig = Bitmap.Config.RGB_565;
+      }
+
       Stats stats = new Stats(cache);
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer, stats, debugging);
+      return new Picasso(context, dispatcher, cache, listener, transformer, stats, debugging, options);
     }
   }
 

@@ -73,9 +73,9 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     if (stream == null) {
       return null;
     }
-    BitmapFactory.Options options = null;
+    BitmapFactory.Options options = picasso.options;
     if (data.hasSize()) {
-      options = new BitmapFactory.Options();
+      options = Utils.copyBitmapFactoryOptions(options);
       options.inJustDecodeBounds = true;
       InputStream is = getInputStream();
       try {

@@ -21,6 +21,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
@@ -194,7 +195,30 @@ final class Utils {
     return context.checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
   }
 
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+  public static BitmapFactory.Options copyBitmapFactoryOptions(BitmapFactory.Options options) {
+    BitmapFactory.Options o = new BitmapFactory.Options();
+    o.inPreferredConfig = options.inPreferredConfig;
+    o.inBitmap = options.inBitmap;
+    o.inDensity = options.inDensity;
+    o.inDither = options.inDither;
+    o.inInputShareable = options.inInputShareable;
+    o.inJustDecodeBounds = options.inJustDecodeBounds;
+    o.inMutable = options.inMutable;
+    o.inPreferQualityOverSpeed = options.inPreferQualityOverSpeed;
+    o.inPurgeable = options.inPurgeable;
+    o.inSampleSize = options.inSampleSize;
+    o.inScaled = options.inScaled;
+    o.inScreenDensity = options.inScreenDensity;
+    o.inTargetDensity = options.inTargetDensity;
+    o.inTempStorage = options.inTempStorage;
+    o.mCancel = options.mCancel;
+    o.outHeight = options.outHeight;
+    o.outWidth = options.outWidth;
+    o.outMimeType = options.outMimeType;
+    return o;
+  }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private static class ActivityManagerHoneycomb {
     static int getLargeMemoryClass(ActivityManager activityManager) {
       return activityManager.getLargeMemoryClass();

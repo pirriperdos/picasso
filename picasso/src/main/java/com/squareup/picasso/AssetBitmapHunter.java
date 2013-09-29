@@ -28,9 +28,9 @@ class AssetBitmapHunter extends BitmapHunter {
   }
 
   Bitmap decodeAsset(String filePath) throws IOException {
-    BitmapFactory.Options options = null;
+    BitmapFactory.Options options = picasso.options;
     if (data.hasSize()) {
-      options = new BitmapFactory.Options();
+      options = Utils.copyBitmapFactoryOptions(options);
       options.inJustDecodeBounds = true;
       InputStream is = null;
       try {
