@@ -201,6 +201,11 @@ public class RequestCreator {
     return this;
   }
 
+
+  public Bitmap get() throws IOException {
+    return get(true);
+  }
+
   /** Synchronously fulfill this request. Must not be called from the main thread. */
   public Bitmap get(boolean checkMain) throws IOException {
     if (checkMain) {
