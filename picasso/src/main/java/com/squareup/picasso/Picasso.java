@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -46,7 +47,13 @@ import static com.squareup.picasso.Utils.THREAD_PREFIX;
  */
 public class Picasso {
 
-  /** Callbacks for Picasso events. */
+
+    public static int networkLevel = 4;
+    public static void onNetworkInfoChange(NetworkInfo info) {
+      networkLevel = Utils.getNetworkIntLevel(info, Utils.NETWORK_WIFI);
+    }
+
+    /** Callbacks for Picasso events. */
   public interface Listener {
     /**
      * Invoked when an image has failed to load. This is useful for reporting image failures to a
@@ -216,6 +223,13 @@ public class Picasso {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
     return new RequestCreator(this, null, resourceId);
+  }
+
+  public RequestCreator load(Uri mainUri, Uri[] networkUris) {
+      if (networkUris.length == 0) {
+        return new RequestCreator(this, null, 0);
+      }
+      return new RequestCreator(this, mainUri, networkUris);
   }
 
   /** {@code true} if debug display, logging, and statistics are enabled. */

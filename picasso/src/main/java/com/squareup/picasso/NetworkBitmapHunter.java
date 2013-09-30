@@ -32,16 +32,18 @@ class NetworkBitmapHunter extends BitmapHunter {
   private final Downloader downloader;
 
   int retryCount;
+  final boolean onlyLocal;
 
   public NetworkBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
       Action action, Downloader downloader) {
     super(picasso, dispatcher, cache, stats, action);
     this.downloader = downloader;
+    this.onlyLocal = action.onlyLocal;
     this.retryCount = DEFAULT_RETRY_COUNT;
   }
 
   @Override Bitmap decode(Request data) throws IOException {
-    boolean loadFromLocalCacheOnly = retryCount == 0;
+    boolean loadFromLocalCacheOnly = retryCount == 0 || onlyLocal;
 
     Response response = downloader.load(data.uri, loadFromLocalCacheOnly);
     if (response == null) {

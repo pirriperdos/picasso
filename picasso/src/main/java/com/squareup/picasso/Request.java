@@ -36,6 +36,7 @@ public final class Request {
    * This is mutually exclusive with {@link #uri}.
    */
   public final int resourceId;
+  public final Uri[] uris;
   /** List of custom transformations to be applied after the built-in transformations. */
   public final List<Transformation> transformations;
   /** Target image width for resizing. */
@@ -63,11 +64,12 @@ public final class Request {
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
 
-  private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
-      int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot) {
+  private Request(Uri uri, int resourceId, Uri[] uris, List<Transformation> transformations, int targetWidth,
+                  int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
+                  float rotationPivotX, float rotationPivotY, boolean hasRotationPivot) {
     this.uri = uri;
     this.resourceId = resourceId;
+    this.uris = uris;
     if (transformations == null) {
       this.transformations = null;
     } else {
@@ -114,6 +116,7 @@ public final class Request {
   public static final class Builder {
     private Uri uri;
     private int resourceId;
+    private Uri[] uris;
     private int targetWidth;
     private int targetHeight;
     private boolean centerCrop;
@@ -126,12 +129,22 @@ public final class Request {
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
-      setUri(uri);
+      this.uri = uri;
+      this.resourceId = 0;
+      this.uris = null;
     }
 
     /** Start building a request using the specified resource ID. */
     public Builder(int resourceId) {
-      setResourceId(resourceId);
+      this.resourceId = resourceId;
+      this.uri = null;
+      this.uris = null;
+    }
+
+    public Builder(Uri uri, Uri[] uris) {
+      this.uri = uri;
+      this.uris = uris;
+      this.resourceId  = 0;
     }
 
     Builder(Uri uri, int resourceId) {
@@ -155,40 +168,12 @@ public final class Request {
       }
     }
 
-    boolean hasImage() {
+      boolean hasImage() {
       return uri != null || resourceId != 0;
     }
 
     boolean hasSize() {
       return targetWidth != 0;
-    }
-
-    /**
-     * Set the target image Uri.
-     * <p>
-     * This will clear an image resource ID if one is set.
-     */
-    public Builder setUri(Uri uri) {
-      if (uri == null) {
-        throw new IllegalArgumentException("Image URI may not be null.");
-      }
-      this.uri = uri;
-      this.resourceId = 0;
-      return this;
-    }
-
-    /**
-     * Set the target image resource ID.
-     * <p>
-     * This will clear an image Uri if one is set.
-     */
-    public Builder setResourceId(int resourceId) {
-      if (resourceId == 0) {
-        throw new IllegalArgumentException("Image resource ID may not be 0.");
-      }
-      this.resourceId = resourceId;
-      this.uri = null;
-      return this;
     }
 
     /** Resize the image to the specified size in pixels. */
@@ -301,7 +286,7 @@ public final class Request {
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
-      return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
+      return new Request(uri, resourceId, uris, transformations, targetWidth, targetHeight, centerCrop,
           centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot);
     }
   }

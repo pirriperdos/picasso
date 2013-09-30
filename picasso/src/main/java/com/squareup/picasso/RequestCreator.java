@@ -41,6 +41,7 @@ public class RequestCreator {
   private Drawable placeholderDrawable;
   private int errorResId;
   private Drawable errorDrawable;
+  private boolean onlyLocal;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -56,7 +57,12 @@ public class RequestCreator {
     this.data = new Request.Builder(null, 0);
   }
 
-  /**
+    public RequestCreator(Picasso picasso, Uri mainUri, Uri[] networkUris) {
+      this.picasso = picasso;
+      this.data = new Request.Builder(mainUri, networkUris);
+    }
+
+    /**
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
    * not immediately available in the memory cache then this resource will be set on the target
    * {@link ImageView}.
@@ -195,6 +201,11 @@ public class RequestCreator {
     return this;
   }
 
+  public RequestCreator onlyLocal() {
+    onlyLocal = true;
+    return this;
+  }
+
   /** Disable brief fade in of images loaded from the disk cache or network. */
   public RequestCreator noFade() {
     noFade = true;
@@ -221,7 +232,7 @@ public class RequestCreator {
     Request finalData = picasso.transformRequest(data.build());
     String key = Utils.createKey(finalData);
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
+    Action action = new GetAction(picasso, finalData, skipMemoryCache, onlyLocal, key);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
         action, picasso.dispatcher.downloader).hunt();
   }
@@ -238,7 +249,7 @@ public class RequestCreator {
       Request finalData = picasso.transformRequest(data.build());
       String key = Utils.createKey(finalData);
 
-      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
+      Action action = new FetchAction(picasso, finalData, skipMemoryCache, onlyLocal, key);
       picasso.enqueueAndSubmit(action);
     }
   }
@@ -312,7 +323,7 @@ public class RequestCreator {
 
     target.onPrepareLoad(drawable);
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
+    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, onlyLocal, requestKey);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -379,7 +390,7 @@ public class RequestCreator {
     PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
 
     Action action =
-        new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
+        new ImageViewAction(picasso, target, finalData, skipMemoryCache, onlyLocal, noFade, errorResId,
             errorDrawable, requestKey, callback);
 
     picasso.enqueueAndSubmit(action);
