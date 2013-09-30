@@ -24,6 +24,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
@@ -78,19 +79,28 @@ final class Utils {
   }
 
   static String createKey(Request data) {
-    StringBuilder builder;
-
-    if (data.uri != null) {
-      String path = data.uri.toString();
-      builder = new StringBuilder(path.length() + KEY_PADDING);
-      builder.append(path);
-      if (data.uris != null) {
-          builder.append("!ML!");
+      if (data.uri != null) {
+          String path = data.uri.toString();
+          if (data.uris != null) {
+            return createKeyInner(path + "!ML!", data);
+          } else {
+            return createKeyInner(path, data);
+          }
+      } else {
+        return createKeyInner(Integer.toString(data.resourceId), data);
       }
-    } else {
-      builder = new StringBuilder(KEY_PADDING);
-      builder.append(data.resourceId);
-    }
+  }
+  static String createCacheKey(Uri uri, Request request) {
+    return createKeyInner(uri.toString(), request);
+  }
+
+  static String createCacheKey(int resId, Request request) {
+    return createKeyInner(Integer.toString(resId), request);
+  }
+
+  static String createKeyInner(String name, Request data) {
+    StringBuilder builder = new StringBuilder(name.length() + KEY_PADDING);
+    builder.append(name);
     builder.append('\n');
 
     if (data.rotationDegrees != 0) {
@@ -129,10 +139,10 @@ final class Utils {
     }
   }
 
-  static final int NETWORK_WIFI = 4;
-  static final int NETWORK_4G = 3;
-  static final int NETWORK_3G = 2;
-  static final int NETWORK_2G = 1;
+  static final int NETWORK_WIFI = 3;
+  static final int NETWORK_4G = 2;
+  static final int NETWORK_3G = 1;
+  static final int NETWORK_2G = 0;
 
   static int getNetworkIntLevel(NetworkInfo info, int defaultLevel) {
       switch (info.getType()) {

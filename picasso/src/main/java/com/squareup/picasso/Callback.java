@@ -16,13 +16,13 @@
 package com.squareup.picasso;
 
 public interface Callback {
-  void onSuccess();
+  void onSuccess(int level);
 
   void onError();
 
   public static class EmptyCallback implements Callback {
 
-    @Override public void onSuccess() {
+    @Override public void onSuccess(int level) {
     }
 
     @Override public void onError() {

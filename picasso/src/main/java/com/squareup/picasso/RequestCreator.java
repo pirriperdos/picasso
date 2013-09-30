@@ -25,7 +25,9 @@ import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Utils.NETWORK_WIFI;
 import static com.squareup.picasso.Utils.checkNotMain;
+import static com.squareup.picasso.Utils.createCacheKey;
 import static com.squareup.picasso.Utils.createKey;
 
 /** Fluent API for building an image download request. */
@@ -372,10 +374,19 @@ public class RequestCreator {
     }
 
     Request finalData = picasso.transformRequest(data.build());
-    String requestKey = createKey(finalData);
 
     if (!skipMemoryCache) {
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
+      Bitmap bitmap = null;
+      if (finalData.uris == null) {
+          bitmap = picasso.quickMemoryCacheCheck(createCacheKey(finalData.uri, finalData));
+      } else {
+          for (int i = NETWORK_WIFI; i >= Picasso.networkLevel; i--) {
+            bitmap = picasso.quickMemoryCacheCheck(createCacheKey(finalData.uris[i], finalData));
+            if (bitmap != null)
+              break;
+          }
+      }
+
       if (bitmap != null) {
         picasso.cancelRequest(target);
         PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,
@@ -391,7 +402,7 @@ public class RequestCreator {
 
     Action action =
         new ImageViewAction(picasso, target, finalData, skipMemoryCache, onlyLocal, noFade, errorResId,
-            errorDrawable, requestKey, callback);
+            errorDrawable, Utils.createKey(finalData), callback);
 
     picasso.enqueueAndSubmit(action);
   }

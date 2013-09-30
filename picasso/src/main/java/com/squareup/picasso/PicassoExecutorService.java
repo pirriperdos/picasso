@@ -41,7 +41,7 @@ class PicassoExecutorService extends ThreadPoolExecutor {
       setThreadCount(DEFAULT_THREAD_COUNT);
       return;
     }
-    setThreadCount(Utils.getNetworkIntLevel(info, DEFAULT_THREAD_COUNT));
+    setThreadCount(Math.min(Utils.getNetworkIntLevel(info, Utils.NETWORK_WIFI) + 1, DEFAULT_THREAD_COUNT));
   }
 
   private void setThreadCount(int threadCount) {
