@@ -86,7 +86,7 @@ abstract class BitmapHunter implements Runnable {
       if (result == null) {
         dispatcher.dispatchFailed(this);
       } else {
-        dispatcher.dispatchComplete(this);
+        dispatcher.dispatchComplete(this, getNetworkLevel());
       }
     } catch (IOException e) {
       exception = e;
@@ -98,11 +98,22 @@ abstract class BitmapHunter implements Runnable {
 
   abstract Bitmap decode(Request data) throws IOException;
 
-  Bitmap hunt() throws IOException {
-    Bitmap bitmap;
+  private int getNetworkLevel() {
+    return Utils.NETWORK_WIFI;
+  }
 
+  Bitmap hunt() throws IOException {
+    Bitmap bitmap = null;
     if (!skipMemoryCache) {
-      bitmap = cache.get(key);
+      if (data.uris != null) {
+        for (int i = Utils.NETWORK_WIFI; i >= Picasso.networkLevel; i--) {
+          bitmap = cache.get(Utils.createCacheKey(data.uris[i], data));
+          if (bitmap != null)
+            break;
+        }
+      } else {
+        bitmap = cache.get(key);
+      }
       if (bitmap != null) {
         stats.dispatchCacheHit();
         loadedFrom = MEMORY;
@@ -111,6 +122,7 @@ abstract class BitmapHunter implements Runnable {
     }
 
     bitmap = decode(data);
+    int networkLevel = getNetworkLevel();
 
     if (bitmap != null) {
       stats.dispatchBitmapDecoded(bitmap);

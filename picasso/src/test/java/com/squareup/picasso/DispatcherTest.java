@@ -144,20 +144,20 @@ public class DispatcherTest {
 
   @Test public void performCompleteSetsResultInCache() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    dispatcher.performComplete(hunter);
+    dispatcher.performComplete(hunter, msg.arg1);
     verify(cache).set(hunter.getKey(), hunter.getResult());
   }
 
   @Test public void performCompleteWithSkipCacheDoesNotCache() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, true);
-    dispatcher.performComplete(hunter);
+    dispatcher.performComplete(hunter, msg.arg1);
     assertThat(dispatcher.hunterMap).isEmpty();
     verifyZeroInteractions(cache);
   }
 
   @Test public void performCompleteCleansUpAndAddsToBatch() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    dispatcher.performComplete(hunter);
+    dispatcher.performComplete(hunter, msg.arg1);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.batch).hasSize(1);
   }
@@ -165,7 +165,7 @@ public class DispatcherTest {
   @Test public void performCompleteCleansUpAndDoesNotAddToBatchIfCancelled() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     when(hunter.isCancelled()).thenReturn(true);
-    dispatcher.performComplete(hunter);
+    dispatcher.performComplete(hunter, msg.arg1);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.batch).isEmpty();
   }

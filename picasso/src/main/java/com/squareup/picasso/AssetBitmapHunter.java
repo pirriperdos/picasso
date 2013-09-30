@@ -18,6 +18,7 @@ class AssetBitmapHunter extends BitmapHunter {
     assetManager = context.getAssets();
   }
 
+  // assume this is not multi request!!
   @Override Bitmap decode(Request data) throws IOException {
     String filePath = data.uri.toString().substring(ASSET_PREFIX_LENGTH);
     return decodeAsset(filePath);

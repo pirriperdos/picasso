@@ -105,8 +105,8 @@ class Dispatcher {
     handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL, action));
   }
 
-  void dispatchComplete(BitmapHunter hunter) {
-    handler.sendMessage(handler.obtainMessage(HUNTER_COMPLETE, hunter));
+  void dispatchComplete(BitmapHunter hunter, int networkLevel) {
+    handler.sendMessage(handler.obtainMessage(HUNTER_COMPLETE, networkLevel, 0, hunter));
   }
 
   void dispatchRetry(BitmapHunter hunter) {
@@ -169,9 +169,13 @@ class Dispatcher {
     }
   }
 
-  void performComplete(BitmapHunter hunter) {
+  void performComplete(BitmapHunter hunter, int networkLevel) {
+    String key = hunter.key;
+    if (hunter.getData().uris != null) {
+      key = Utils.createCacheKey(hunter.getData().uris[networkLevel], hunter.getData());
+    }
     if (!hunter.shouldSkipMemoryCache()) {
-      cache.set(hunter.getKey(), hunter.getResult());
+      cache.set(key, hunter.getResult());
     }
     hunterMap.remove(hunter.getKey());
     batch(hunter);
@@ -228,7 +232,7 @@ class Dispatcher {
         }
         case HUNTER_COMPLETE: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performComplete(hunter);
+          performComplete(hunter, msg.arg1);
           break;
         }
         case HUNTER_RETRY: {
