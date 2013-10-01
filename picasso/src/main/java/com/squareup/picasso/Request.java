@@ -147,11 +147,6 @@ public final class Request {
       this.resourceId  = 0;
     }
 
-    Builder(Uri uri, int resourceId) {
-      this.uri = uri;
-      this.resourceId = resourceId;
-    }
-
     private Builder(Request request) {
       uri = request.uri;
       resourceId = request.resourceId;

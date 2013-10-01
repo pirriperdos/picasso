@@ -48,9 +48,9 @@ import static com.squareup.picasso.Utils.THREAD_PREFIX;
 public class Picasso {
 
 
-    public static int networkLevel = 4;
+    public static int NETWORK_LEVEL = Utils.NETWORK_WIFI;
     public static void onNetworkInfoChange(NetworkInfo info) {
-      networkLevel = Utils.getNetworkIntLevel(info, Utils.NETWORK_WIFI);
+      NETWORK_LEVEL = Utils.getNetworkIntLevel(info, Utils.NETWORK_WIFI);
     }
 
     /** Callbacks for Picasso events. */
@@ -165,7 +165,7 @@ public class Picasso {
    * @see #load(int)
    */
   public RequestCreator load(Uri uri) {
-    return new RequestCreator(this, uri, 0);
+    return new RequestCreator(this, new Request.Builder(uri));
   }
 
   /**
@@ -185,7 +185,7 @@ public class Picasso {
    */
   public RequestCreator load(String path) {
     if (path == null) {
-      return new RequestCreator(this, null, 0);
+      return new RequestCreator(this, new Request.Builder(null));
     }
     if (path.trim().length() == 0) {
       throw new IllegalArgumentException("Path must not be empty.");
@@ -206,7 +206,7 @@ public class Picasso {
    */
   public RequestCreator load(File file) {
     if (file == null) {
-      return new RequestCreator(this, null, 0);
+      return new RequestCreator(this, new Request.Builder(null));
     }
     return load(Uri.fromFile(file));
   }
@@ -222,12 +222,12 @@ public class Picasso {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
-    return new RequestCreator(this, null, resourceId);
+    return new RequestCreator(this, new Request.Builder(resourceId));
   }
 
   public RequestCreator load(Uri mainUri, Uri[] networkUris) {
       if (networkUris.length == 0) {
-        return new RequestCreator(this, null, 0);
+        return new RequestCreator(this, new Request.Builder(null));
       }
       return new RequestCreator(this, mainUri, networkUris);
   }
@@ -292,6 +292,20 @@ public class Picasso {
 
   void submit(Action action) {
     dispatcher.dispatchSubmit(action);
+  }
+
+  Bitmap memoryCacheCheckForMultiKey(Request data) {
+    Bitmap bitmap = null;
+    for (int i = Math.min(Utils.NETWORK_WIFI, data.uris.length-1); i >= 0; i--) {
+      if (data.uris[i] == null)
+        continue;
+       bitmap = cache.get(Utils.createCacheKey(data.uris[i], data));
+        if (bitmap != null)
+          break;
+        if (i <= Picasso.NETWORK_LEVEL)
+          break;
+    }
+    return bitmap;
   }
 
   Bitmap quickMemoryCacheCheck(String key) {

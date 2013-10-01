@@ -67,7 +67,7 @@ class TestUtils {
   }
 
   static Action mockAction(String key, Uri uri, Object target, int resourceId) {
-    Request request = new Request.Builder(uri, resourceId).build();
+    Request request = new Request.Builder(null).build();
     Action action = mock(Action.class);
     when(action.getKey()).thenReturn(key);
     when(action.getData()).thenReturn(request);

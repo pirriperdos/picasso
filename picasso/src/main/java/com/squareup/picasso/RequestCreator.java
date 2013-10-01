@@ -45,18 +45,18 @@ public class RequestCreator {
   private Drawable errorDrawable;
   private boolean onlyLocal;
 
-  RequestCreator(Picasso picasso, Uri uri, int resourceId) {
+  RequestCreator(Picasso picasso, Request.Builder data) {
     if (picasso.shutdown) {
       throw new IllegalStateException(
           "Picasso instance already shut down. Cannot submit new requests.");
     }
     this.picasso = picasso;
-    this.data = new Request.Builder(uri, resourceId);
+    this.data = data;
   }
 
   @TestOnly RequestCreator() {
     this.picasso = null;
-    this.data = new Request.Builder(null, 0);
+    this.data = new Request.Builder(0);
   }
 
     public RequestCreator(Picasso picasso, Uri mainUri, Uri[] networkUris) {
@@ -315,7 +315,12 @@ public class RequestCreator {
     String requestKey = createKey(finalData);
 
     if (!skipMemoryCache) {
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
+      Bitmap bitmap = null;
+      if (finalData.uris == null) {
+        bitmap = picasso.quickMemoryCacheCheck(Utils.createKey(finalData));
+      } else {
+        bitmap = picasso.memoryCacheCheckForMultiKey(finalData);
+      }
       if (bitmap != null) {
         picasso.cancelRequest(target);
         target.onBitmapLoaded(bitmap, MEMORY);
@@ -378,13 +383,9 @@ public class RequestCreator {
     if (!skipMemoryCache) {
       Bitmap bitmap = null;
       if (finalData.uris == null) {
-          bitmap = picasso.quickMemoryCacheCheck(createCacheKey(finalData.uri, finalData));
+          bitmap = picasso.quickMemoryCacheCheck(Utils.createKey(finalData));
       } else {
-          for (int i = NETWORK_WIFI; i >= Picasso.networkLevel; i--) {
-            bitmap = picasso.quickMemoryCacheCheck(createCacheKey(finalData.uris[i], finalData));
-            if (bitmap != null)
-              break;
-          }
+          bitmap = picasso.memoryCacheCheckForMultiKey(finalData);
       }
 
       if (bitmap != null) {

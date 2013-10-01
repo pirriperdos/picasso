@@ -288,6 +288,7 @@ class Dispatcher {
         filter.addAction(CONNECTIVITY_ACTION);
       }
       context.registerReceiver(this, filter);
+      dispatchNetworkStateChange(connectivityManager.getActiveNetworkInfo());
     }
 
     void unregister() {

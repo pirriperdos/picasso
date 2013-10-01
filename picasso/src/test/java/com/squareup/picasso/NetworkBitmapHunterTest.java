@@ -123,4 +123,5 @@ public class NetworkBitmapHunterTest {
     Bitmap actual = hunter.decode(action.getData());
     assertThat(actual).isSameAs(expected);
   }
+
 }

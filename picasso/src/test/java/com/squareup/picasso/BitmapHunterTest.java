@@ -87,7 +87,7 @@ public class BitmapHunterTest {
     BitmapHunter hunter =
         new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, BITMAP_1);
     hunter.run();
-    verify(dispatcher).dispatchComplete(hunter);
+    verify(dispatcher).dispatchComplete(hunter, Utils.NETWORK_WIFI);
   }
 
   @Test public void runWithNoResultDispatchFailed() throws Exception {

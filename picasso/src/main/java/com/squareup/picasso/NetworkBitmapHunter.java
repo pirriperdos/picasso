@@ -18,6 +18,8 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
+import android.net.Uri;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -42,27 +44,52 @@ class NetworkBitmapHunter extends BitmapHunter {
     this.retryCount = DEFAULT_RETRY_COUNT;
   }
 
+  private Bitmap decode(Uri uri, boolean localOnly) throws IOException {
+      Response response = downloader.load(uri, localOnly);
+      if (response == null) {
+          return null;
+      }
+
+      loadedFrom = response.cached ? DISK : NETWORK;
+
+      Bitmap result = response.getBitmap();
+      if (result != null) {
+          return result;
+      }
+
+      InputStream is = response.getInputStream();
+      try {
+          return decodeStream(is, data);
+      } finally {
+          Utils.closeQuietly(is);
+      }
+  }
+
+  private int networkLevel = Utils.NETWORK_WIFI;
   @Override Bitmap decode(Request data) throws IOException {
     boolean loadFromLocalCacheOnly = retryCount == 0 || onlyLocal;
-
-    Response response = downloader.load(data.uri, loadFromLocalCacheOnly);
-    if (response == null) {
-      return null;
+    Bitmap bitmap = null;
+    if (data.uris != null) {
+      for (int i = Math.min(Utils.NETWORK_WIFI, data.uris.length - 1); i >= 0; i--) {
+        if (data.uris[i] == null)
+          continue;
+        bitmap = decode(data.uris[i], loadFromLocalCacheOnly || i > Picasso.NETWORK_LEVEL);
+        if (bitmap != null) {
+          networkLevel = i;
+          return bitmap;
+        }
+        if (i <= Picasso.NETWORK_LEVEL)
+          break;
+      }
+    } else {
+      return decode(data.uri, loadFromLocalCacheOnly);
     }
+    return null;
+  }
 
-    loadedFrom = response.cached ? DISK : NETWORK;
 
-    Bitmap result = response.getBitmap();
-    if (result != null) {
-      return result;
-    }
-
-    InputStream is = response.getInputStream();
-    try {
-      return decodeStream(is, data);
-    } finally {
-      Utils.closeQuietly(is);
-    }
+  @Override protected int getNetworkLevel() {
+    return networkLevel;
   }
 
   @Override boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
