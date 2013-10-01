@@ -1,3 +1,15 @@
+
+
+# Extensions
+
+* Default decode image option when crating Picasso
+* `localOnly()`
+* `Picasso.with(context).load(mainUri, new Uri[]{uriFor2gAnd3g, null, uriFor4gAbove}).into(imageView)`
+
+
+
+---------------------
+
 Picasso
 ========
 
