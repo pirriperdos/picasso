@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.Rect;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -30,7 +33,8 @@ class AssetBitmapHunter extends BitmapHunter {
 
   Bitmap decodeAsset(String filePath) throws IOException {
     BitmapFactory.Options options = picasso.options;
-    if (data.hasSize()) {
+    Rect rect = null;
+    if (data.hasSize() || data.cropper != null) {
       options = Utils.copyBitmapFactoryOptions(options);
       options.inJustDecodeBounds = true;
       InputStream is = null;
@@ -40,11 +44,17 @@ class AssetBitmapHunter extends BitmapHunter {
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      if (data.cropper != null) {
+        rect = data.cropper.crop(options.outWidth, options.outHeight);
+          if (data.hasSize())
+            calculateInSampleSize(data.targetWidth, data.targetHeight, options, rect.width(), rect.height());
+      } else if (data.hasSize())
+        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
     InputStream is = assetManager.open(filePath);
     try {
-      return BitmapFactory.decodeStream(is, null, options);
+        if (data.cropper != null) return BitmapRegionDecoder.newInstance(is, false).decodeRegion(rect, options);
+        else return BitmapFactory.decodeStream(is, null, options);
     } finally {
       Utils.closeQuietly(is);
     }

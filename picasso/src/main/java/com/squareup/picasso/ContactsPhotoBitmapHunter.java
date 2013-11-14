@@ -20,9 +20,12 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.ContactsContract;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -73,8 +76,9 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     if (stream == null) {
       return null;
     }
+    Rect rect = null;
     BitmapFactory.Options options = picasso.options;
-    if (data.hasSize()) {
+    if (data.hasSize() || data.cropper != null) {
       options = Utils.copyBitmapFactoryOptions(options);
       options.inJustDecodeBounds = true;
       InputStream is = getInputStream();
@@ -83,9 +87,17 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      if (data.cropper != null) {
+        rect = data.cropper.crop(options.outWidth, options.outHeight);
+        if (data.hasSize())
+          calculateInSampleSize(data.targetWidth, data.targetHeight, options, rect.width(), rect.height());
+      } else if (data.hasSize())
+        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
-    return BitmapFactory.decodeStream(stream, null, options);
+    if (data.cropper != null)
+        return BitmapRegionDecoder.newInstance(stream, false).decodeRegion(rect, options);
+    else
+        return BitmapFactory.decodeStream(stream, null, options);
   }
 
   @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)

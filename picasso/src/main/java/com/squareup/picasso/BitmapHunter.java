@@ -21,14 +21,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.net.Uri;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
-import static android.content.ContentResolver.SCHEME_CONTENT;
-import static android.content.ContentResolver.SCHEME_FILE;
+import static android.content.ContentResolver.*;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
@@ -185,6 +184,7 @@ abstract class BitmapHunter implements Runnable {
     return loadedFrom;
   }
 
+
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
       Cache cache, Stats stats, Action action, Downloader downloader) {
     if (action.getData().resourceId != 0) {
@@ -211,9 +211,8 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
-  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
-    final int height = options.outHeight;
-    final int width = options.outWidth;
+  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options, int width, int height) {
+
     int sampleSize = 1;
     if (height > reqHeight || width > reqWidth) {
       final int heightRatio = Math.round((float) height / (float) reqHeight);
@@ -223,6 +222,11 @@ abstract class BitmapHunter implements Runnable {
 
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;
+  }
+  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
+    final int height = options.outHeight;
+    final int width = options.outWidth;
+    calculateInSampleSize(reqWidth, reqHeight, options, width, height);
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
@@ -318,8 +322,12 @@ abstract class BitmapHunter implements Runnable {
       matrix.preRotate(exifRotation);
     }
 
-    Bitmap newResult =
-        Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, true);
+    Bitmap newResult = null;
+    if (data.clipBounds)
+      newResult =
+            Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, true);
+    else
+      newResult = Bitmap.createBitmap(result, 0, 0, result.getWidth(), result.getHeight(), matrix, true);
     if (newResult != result) {
       result.recycle();
       result = newResult;

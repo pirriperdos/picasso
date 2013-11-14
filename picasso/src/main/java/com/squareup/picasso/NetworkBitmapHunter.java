@@ -17,6 +17,8 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.Rect;
 import android.net.NetworkInfo;
 import android.net.Uri;
 
@@ -106,7 +108,8 @@ class NetworkBitmapHunter extends BitmapHunter {
       return null;
     }
     BitmapFactory.Options options = picasso.options;
-    if (data.hasSize()) {
+    Rect rect = null;
+    if (data.hasSize() || data.cropper != null) {
       options = Utils.copyBitmapFactoryOptions(options);
       options.inJustDecodeBounds = true;
 
@@ -115,10 +118,17 @@ class NetworkBitmapHunter extends BitmapHunter {
 
       long mark = markStream.savePosition(MARKER);
       BitmapFactory.decodeStream(stream, null, options);
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      if (data.cropper != null) {
+        rect = data.cropper.crop(options.outWidth, options.outHeight);
+        if (data.hasSize())
+          calculateInSampleSize(data.targetWidth, data.targetHeight, options, rect.width(), rect.height());
+      } else if (data.hasSize())
+        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
 
       markStream.reset(mark);
     }
-    return BitmapFactory.decodeStream(stream, null, options);
+
+    if (data.cropper != null) return BitmapRegionDecoder.newInstance(stream, false).decodeRegion(rect, options);
+    else return BitmapFactory.decodeStream(stream, null, options);
   }
 }

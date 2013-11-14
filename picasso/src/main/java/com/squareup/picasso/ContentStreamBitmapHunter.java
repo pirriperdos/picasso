@@ -17,8 +17,9 @@ package com.squareup.picasso;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.*;
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -45,7 +46,8 @@ class ContentStreamBitmapHunter extends BitmapHunter {
   protected Bitmap decodeContentStream(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
     BitmapFactory.Options options = picasso.options;
-    if (data.hasSize()) {
+    Rect rect = null;
+    if (data.hasSize() || data.cropper != null) {
       options = Utils.copyBitmapFactoryOptions(options);
       options.inJustDecodeBounds = true;
       InputStream is = null;
@@ -55,11 +57,35 @@ class ContentStreamBitmapHunter extends BitmapHunter {
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+
+      if (data.cropper != null) {
+        if (exifRotation == 90 || exifRotation == 180 )
+          rect = data.cropper.crop(options.outHeight, options.outWidth);
+        else
+          rect = data.cropper.crop(options.outWidth, options.outHeight);
+        if (exifRotation != 0) {
+          Matrix matrix = new Matrix();
+          RectF rectF = new RectF(rect.left, rect.top, rect.right, rect.bottom);
+          Log.d("picasso", "returned rect: " +  rect.toString());
+          matrix.postRotate(exifRotation);
+          matrix.mapRect(rectF);
+          rect = new Rect((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
+          if (rect.left < 0) rect.left += options.outWidth;
+          if (rect.right < 0) rect.right += options.outWidth;
+          if (rect.top < 0) rect.top += options.outHeight;
+          if (rect.bottom < 0) rect.bottom += options.outHeight;
+          Log.d("picasso", "maped rect: " + rect.toString());
+          Log.d("picasso", "OriBitmapWidth: " + options.outWidth + ", OriBitmapHeight: " + options.outHeight + ", exifRotation: " + exifRotation);
+        }
+        if (data.hasSize())
+          calculateInSampleSize(data.targetWidth, data.targetHeight, options, rect.width(), rect.height());
+      } else if (data.hasSize())
+        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
     InputStream is = contentResolver.openInputStream(data.uri);
     try {
-      return BitmapFactory.decodeStream(is, null, options);
+      if (data.cropper != null) return BitmapRegionDecoder.newInstance(is, false).decodeRegion(rect, options);
+      else return BitmapFactory.decodeStream(is, null, options);
     } finally {
       Utils.closeQuietly(is);
     }

@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Handler;
@@ -26,6 +27,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.widget.ImageView;
+
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
 import java.util.List;
@@ -34,9 +36,9 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static com.squareup.picasso.Action.RequestWeakReference;
 import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
 import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
-import static com.squareup.picasso.Action.RequestWeakReference;
 import static com.squareup.picasso.Utils.THREAD_PREFIX;
 
 /**
@@ -45,8 +47,19 @@ import static com.squareup.picasso.Utils.THREAD_PREFIX;
  * Use {@link #with(android.content.Context)} for the global singleton instance or construct your
  * own instance with {@link Builder}.
  */
+
+/**
+ *
+ * How is bitmap decoded?? The inSampleSize will be used to resize the bitmap
+ * and if cropper is set, you will not be able to set the target size
+ * that's all
+ */
 public class Picasso {
 
+
+    public interface Cropper {
+        public Rect crop(int width, int height);
+    }
 
     public static int NETWORK_LEVEL = Utils.NETWORK_WIFI;
     public static void onNetworkInfoChange(NetworkInfo info) {

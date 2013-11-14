@@ -15,8 +15,8 @@
  */
 package com.squareup.picasso;
 
-import android.graphics.BitmapFactory;
 import android.net.Uri;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +55,7 @@ public final class Request {
    * This is mutually exclusive with {@link #centerCrop}.
    */
   public final boolean centerInside;
+  public final boolean clipBounds;
   /** Amount to rotate the image in degrees. */
   public final float rotationDegrees;
   /** Rotation pivot on the X axis. */
@@ -63,13 +64,16 @@ public final class Request {
   public final float rotationPivotY;
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
+  public final Picasso.Cropper cropper;
 
-  private Request(Uri uri, int resourceId, Uri[] uris, List<Transformation> transformations, int targetWidth,
-                  int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
+    private Request(Uri uri, int resourceId, Uri[] uris, List<Transformation> transformations, int targetWidth,
+                  int targetHeight, Picasso.Cropper cropper, boolean centerCrop, boolean centerInside, boolean clipBounds, float rotationDegrees,
                   float rotationPivotX, float rotationPivotY, boolean hasRotationPivot) {
     this.uri = uri;
     this.resourceId = resourceId;
     this.uris = uris;
+
+    this.cropper = cropper;
     if (transformations == null) {
       this.transformations = null;
     } else {
@@ -77,6 +81,7 @@ public final class Request {
     }
     this.targetWidth = targetWidth;
     this.targetHeight = targetHeight;
+    this.clipBounds = clipBounds;
     this.centerCrop = centerCrop;
     this.centerInside = centerInside;
     this.rotationDegrees = rotationDegrees;
@@ -93,7 +98,7 @@ public final class Request {
   }
 
   public boolean hasSize() {
-    return targetWidth != 0;
+    return targetWidth != 0 ;
   }
 
   boolean needsTransformation() {
@@ -126,8 +131,10 @@ public final class Request {
     private float rotationPivotY;
     private boolean hasRotationPivot;
     private List<Transformation> transformations;
+    public Picasso.Cropper cropper;
+    public boolean clipBounds = true;
 
-    /** Start building a request using the specified {@link Uri}. */
+      /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
       this.uri = uri;
       this.resourceId = 0;
@@ -153,6 +160,7 @@ public final class Request {
       targetWidth = request.targetWidth;
       targetHeight = request.targetHeight;
       centerCrop = request.centerCrop;
+      cropper = request.cropper;
       centerInside = request.centerInside;
       rotationDegrees = request.rotationDegrees;
       rotationPivotX = request.rotationPivotX;
@@ -224,6 +232,11 @@ public final class Request {
       return this;
     }
 
+    public Builder crop(Picasso.Cropper cropper) {
+      this.cropper = cropper;
+      return this;
+    }
+
     /** Clear the center inside transformation flag, if set. */
     public Builder clearCenterInside() {
       centerInside = false;
@@ -281,8 +294,8 @@ public final class Request {
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
-      return new Request(uri, resourceId, uris, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot);
+      return new Request(uri, resourceId, uris, transformations, targetWidth, targetHeight, cropper, centerCrop,
+          centerInside, clipBounds, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot);
     }
   }
 }

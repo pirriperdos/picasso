@@ -20,14 +20,12 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
+
 import java.io.IOException;
-import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.Utils.NETWORK_WIFI;
 import static com.squareup.picasso.Utils.checkNotMain;
-import static com.squareup.picasso.Utils.createCacheKey;
 import static com.squareup.picasso.Utils.createKey;
 
 /** Fluent API for building an image download request. */
@@ -54,7 +52,7 @@ public class RequestCreator {
     this.data = data;
   }
 
-  @TestOnly RequestCreator() {
+  RequestCreator() {
     this.picasso = null;
     this.data = new Request.Builder(0);
   }
@@ -148,6 +146,23 @@ public class RequestCreator {
   /** Resize the image to the specified size in pixels. */
   public RequestCreator resize(int targetWidth, int targetHeight) {
     data.resize(targetWidth, targetHeight);
+    return this;
+  }
+
+
+  public RequestCreator crop(Picasso.Cropper cropper) {
+    data.crop(cropper);
+    return this;
+  }
+
+  public RequestCreator clipBounds(boolean clip) {
+    data.clipBounds = clip;
+    return this;
+  }
+
+
+  public RequestCreator cancelCrop() {
+    data.cropper = null;
     return this;
   }
 

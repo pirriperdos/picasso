@@ -50,9 +50,9 @@ final class Utils {
   static final int DEFAULT_READ_TIMEOUT = 20 * 1000; // 20s
   static final int DEFAULT_CONNECT_TIMEOUT = 15 * 1000; // 15s
   private static final String PICASSO_CACHE = "picasso-cache";
-  private static final int KEY_PADDING = 54; // Determined by exact science.
-  private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
-  private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
+  private static final int KEY_PADDING = 56;// Determined by exact science.
+  private static final int MIN_DISK_CACHE_SIZE = 20 * 1024 * 1024; // 20MB
+  private static final int MAX_DISK_CACHE_SIZE = 100 * 1024 * 1024; // 50MB
   private static final int MAX_MEM_CACHE_SIZE = 30 * 1024 * 1024; // 30MB
 
   private Utils() {
@@ -118,6 +118,8 @@ final class Utils {
       builder.append("centerCrop\n");
     } else if (data.centerInside) {
       builder.append("centerInside\n");
+    } else if (data.cropper != null) {
+      builder.append("customCropped\n");
     }
 
     if (data.transformations != null) {
@@ -145,32 +147,39 @@ final class Utils {
   static final int NETWORK_2G = 0;
 
   static int getNetworkIntLevel(NetworkInfo info, int defaultLevel) {
+    try {
+      if (info == null)
+        return NETWORK_2G;
       switch (info.getType()) {
-          case ConnectivityManager.TYPE_WIFI:
-          case ConnectivityManager.TYPE_WIMAX:
-          case ConnectivityManager.TYPE_ETHERNET:
-              return NETWORK_WIFI;
-          case ConnectivityManager.TYPE_MOBILE:
-              switch (info.getSubtype()) {
-                  case TelephonyManager.NETWORK_TYPE_LTE:  // 4G
-                  case TelephonyManager.NETWORK_TYPE_HSPAP:
-                  case TelephonyManager.NETWORK_TYPE_EHRPD:
-                    return NETWORK_4G;
-                  case TelephonyManager.NETWORK_TYPE_UMTS: // 3G
-                  case TelephonyManager.NETWORK_TYPE_CDMA:
-                  case TelephonyManager.NETWORK_TYPE_EVDO_0:
-                  case TelephonyManager.NETWORK_TYPE_EVDO_A:
-                  case TelephonyManager.NETWORK_TYPE_EVDO_B:
-                    return NETWORK_3G;
-                  case TelephonyManager.NETWORK_TYPE_GPRS: // 2G
-                  case TelephonyManager.NETWORK_TYPE_EDGE:
-                    return NETWORK_2G;
-                  default:
-                    return defaultLevel;
-              }
-          default:
+        case ConnectivityManager.TYPE_WIFI:
+        case ConnectivityManager.TYPE_WIMAX:
+        case ConnectivityManager.TYPE_ETHERNET:
+          return NETWORK_WIFI;
+        case ConnectivityManager.TYPE_MOBILE:
+          switch (info.getSubtype()) {
+            case TelephonyManager.NETWORK_TYPE_LTE:  // 4G
+            case TelephonyManager.NETWORK_TYPE_HSPAP:
+            case TelephonyManager.NETWORK_TYPE_EHRPD:
+              return NETWORK_4G;
+            case TelephonyManager.NETWORK_TYPE_UMTS: // 3G
+            case TelephonyManager.NETWORK_TYPE_CDMA:
+            case TelephonyManager.NETWORK_TYPE_EVDO_0:
+            case TelephonyManager.NETWORK_TYPE_EVDO_A:
+            case TelephonyManager.NETWORK_TYPE_EVDO_B:
+              return NETWORK_3G;
+            case TelephonyManager.NETWORK_TYPE_GPRS: // 2G
+            case TelephonyManager.NETWORK_TYPE_EDGE:
+              return NETWORK_2G;
+            default:
               return defaultLevel;
+          }
+        default:
+          return defaultLevel;
       }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return NETWORK_2G;
   }
 
   /** Returns {@code true} if header indicates the response body was loaded from the disk cache. */
