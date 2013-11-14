@@ -5,6 +5,9 @@
 * Default decode image option when creating Picasso
 * `localOnly()`
 * `Picasso.with(context).load(mainUri, new Uri[]{uriFor2gAnd3g, null, uriFor4gAbove}).into(imageView)`
+* Crop origional image
+
+
 
 
 
