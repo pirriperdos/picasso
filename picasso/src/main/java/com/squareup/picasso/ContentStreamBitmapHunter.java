@@ -17,8 +17,10 @@ package com.squareup.picasso;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.graphics.*;
-import android.util.Log;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.Rect;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,23 +61,28 @@ class ContentStreamBitmapHunter extends BitmapHunter {
       }
 
       if (data.cropper != null) {
-        if (exifRotation == 90 || exifRotation == 180 )
-          rect = data.cropper.crop(options.outHeight, options.outWidth);
-        else
-          rect = data.cropper.crop(options.outWidth, options.outHeight);
+        int fh = 0, fw = 0;
+        if (exifRotation == 90 || exifRotation == 270 ) {
+          fh = options.outWidth;
+          fw = options.outHeight;
+        } else {
+          fh = options.outHeight;
+          fw = options.outWidth;
+        }
+        rect = data.cropper.crop(fw, fh);
         if (exifRotation != 0) {
-          Matrix matrix = new Matrix();
+/*          Matrix matrix = new Matrix();
           RectF rectF = new RectF(rect.left, rect.top, rect.right, rect.bottom);
-          Log.d("picasso", "returned rect: " +  rect.toString());
-          matrix.postRotate(exifRotation);
+          RectF rectAll = new RectF(0, 0, fw, fh);
+          matrix.preRotate(exifRotation);
+          matrix.mapRect(rectAll);
           matrix.mapRect(rectF);
-          rect = new Rect((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
-          if (rect.left < 0) rect.left += options.outWidth;
-          if (rect.right < 0) rect.right += options.outWidth;
-          if (rect.top < 0) rect.top += options.outHeight;
-          if (rect.bottom < 0) rect.bottom += options.outHeight;
-          Log.d("picasso", "maped rect: " + rect.toString());
-          Log.d("picasso", "OriBitmapWidth: " + options.outWidth + ", OriBitmapHeight: " + options.outHeight + ", exifRotation: " + exifRotation);
+          rect = new Rect((int) (rectF.left - rectAll.left),
+                  (int) (rectF.top - rectAll.top),
+                  (int) (rectF.right - rectAll.left),
+                  (int) (rectF.bottom - rectAll.top));
+
+          Log.d("picasso", rect.toString() + rectF.toString() + rectAll.toString());*/
         }
         if (data.hasSize())
           calculateInSampleSize(data.targetWidth, data.targetHeight, options, rect.width(), rect.height());

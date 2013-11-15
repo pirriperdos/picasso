@@ -66,6 +66,7 @@ public class Picasso {
       NETWORK_LEVEL = Utils.getNetworkIntLevel(info, Utils.NETWORK_WIFI);
     }
 
+
     /** Callbacks for Picasso events. */
   public interface Listener {
     /**
@@ -157,6 +158,9 @@ public class Picasso {
     this.cleanupThread.start();
   }
 
+  public void  clearMemoryCache() {
+    cache.clear();
+  }
   /** Cancel any existing requests for the specified target {@link ImageView}. */
   public void cancelRequest(ImageView view) {
     cancelExistingRequest(view);
