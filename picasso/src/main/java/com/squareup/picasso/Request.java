@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import java.util.ArrayList;
@@ -64,15 +65,17 @@ public final class Request {
   public final float rotationPivotY;
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
+  public BitmapFactory.Options options;
   public final Picasso.Cropper cropper;
 
-    private Request(Uri uri, int resourceId, Uri[] uris, List<Transformation> transformations, int targetWidth,
-                  int targetHeight, Picasso.Cropper cropper, boolean centerCrop, boolean centerInside, boolean clipBounds, float rotationDegrees,
-                  float rotationPivotX, float rotationPivotY, boolean hasRotationPivot) {
+    private Request(Uri uri, BitmapFactory.Options options, int resourceId, Uri[] uris, List<Transformation> transformations, int targetWidth,
+                    int targetHeight, Picasso.Cropper cropper, boolean centerCrop, boolean centerInside, boolean clipBounds, float rotationDegrees,
+                    float rotationPivotX, float rotationPivotY, boolean hasRotationPivot) {
     this.uri = uri;
     this.resourceId = resourceId;
     this.uris = uris;
 
+    this.options = options;
     this.cropper = cropper;
     if (transformations == null) {
       this.transformations = null;
@@ -133,6 +136,7 @@ public final class Request {
     private List<Transformation> transformations;
     public Picasso.Cropper cropper;
     public boolean clipBounds = true;
+    public BitmapFactory.Options options;
 
       /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -294,7 +298,7 @@ public final class Request {
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
-      return new Request(uri, resourceId, uris, transformations, targetWidth, targetHeight, cropper, centerCrop,
+      return new Request(uri, options, resourceId, uris, transformations, targetWidth, targetHeight, cropper, centerCrop,
           centerInside, clipBounds, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot);
     }
   }

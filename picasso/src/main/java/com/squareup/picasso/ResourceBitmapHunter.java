@@ -42,13 +42,13 @@ class ResourceBitmapHunter extends BitmapHunter {
 
   private Bitmap decodeResource(Resources resources, Request data) {
     int resourceId = data.resourceId;
-    BitmapFactory.Options bitmapOptions = picasso.options;
+      BitmapFactory.Options options = data.options == null ? picasso.options : data.options;
     if (data.hasSize()) {
-      bitmapOptions = Utils.copyBitmapFactoryOptions(bitmapOptions);
-      bitmapOptions.inJustDecodeBounds = true;
-      BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
-      calculateInSampleSize(data.targetWidth, data.targetHeight, bitmapOptions);
+      options = Utils.copyBitmapFactoryOptions(options);
+      options.inJustDecodeBounds = true;
+      BitmapFactory.decodeResource(resources, resourceId, options);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
-    return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
+    return BitmapFactory.decodeResource(resources, resourceId, options);
   }
 }

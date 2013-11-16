@@ -137,7 +137,6 @@ public class Picasso {
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   final ReferenceQueue<Object> referenceQueue;
   final BitmapFactory.Options options;
-
   boolean debugging;
   boolean shutdown;
 

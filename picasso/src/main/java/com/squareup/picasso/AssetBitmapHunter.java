@@ -32,7 +32,7 @@ class AssetBitmapHunter extends BitmapHunter {
   }
 
   Bitmap decodeAsset(String filePath) throws IOException {
-    BitmapFactory.Options options = picasso.options;
+    BitmapFactory.Options options = data.options == null ? picasso.options : data.options;
     Rect rect = null;
     if (data.hasSize() || data.cropper != null) {
       options = Utils.copyBitmapFactoryOptions(options);

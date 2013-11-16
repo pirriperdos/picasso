@@ -77,7 +77,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
       return null;
     }
     Rect rect = null;
-    BitmapFactory.Options options = picasso.options;
+    BitmapFactory.Options options = data.options == null ? picasso.options : data.options;
     if (data.hasSize() || data.cropper != null) {
       options = Utils.copyBitmapFactoryOptions(options);
       options.inJustDecodeBounds = true;

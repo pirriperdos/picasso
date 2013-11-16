@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
@@ -43,7 +44,7 @@ public class RequestCreator {
   private Drawable errorDrawable;
   private boolean onlyLocal;
 
-  RequestCreator(Picasso picasso, Request.Builder data) {
+    RequestCreator(Picasso picasso, Request.Builder data) {
     if (picasso.shutdown) {
       throw new IllegalStateException(
           "Picasso instance already shut down. Cannot submit new requests.");
@@ -51,6 +52,8 @@ public class RequestCreator {
     this.picasso = picasso;
     this.data = data;
   }
+
+
 
   RequestCreator() {
     this.picasso = null;
@@ -91,6 +94,12 @@ public class RequestCreator {
       throw new IllegalStateException("Placeholder image already set.");
     }
     this.placeholderDrawable = placeholderDrawable;
+    return this;
+  }
+
+
+  public RequestCreator options(BitmapFactory.Options options) {
+    data.options = options;
     return this;
   }
 
