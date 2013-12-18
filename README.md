@@ -1,6 +1,6 @@
 
 
-# Extensions
+### Extensions
 
 * Default decode image option when creating Picasso
 * `localOnly()`
